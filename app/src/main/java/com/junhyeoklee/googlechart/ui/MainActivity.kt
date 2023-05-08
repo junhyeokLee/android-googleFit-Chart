@@ -41,6 +41,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        checkPermissionsAndRun(GOOGLE_FIT_PERMISSIONS_REQUEST_CODE)
     }
 
     private fun loadNav_controller() {
