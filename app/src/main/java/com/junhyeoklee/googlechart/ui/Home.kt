@@ -1,6 +1,8 @@
 package com.junhyeoklee.googlechart.ui
 
+import android.content.ContentValues
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -9,9 +11,16 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.fitness.Fitness
+import com.google.android.gms.fitness.FitnessOptions
+import com.google.android.gms.fitness.data.DataSource
+import com.google.android.gms.fitness.data.DataType
+import com.google.android.gms.fitness.request.DataSourcesRequest
 import com.junhyeoklee.googlechart.R
 import com.junhyeoklee.googlechart.viewmodel.FitnessViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Calendar
 
 @AndroidEntryPoint
 class Home : Fragment() {
@@ -46,6 +55,7 @@ class Home : Fragment() {
             textViewCalories.text = DailyFitness.caloriesBurned.toString()
             textViewDistance.text = String.format("%.2f", DailyFitness.distance)
             stepsProgressBar.progress = DailyFitness.stepCount
+
         })
 
         return rootView

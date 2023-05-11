@@ -10,4 +10,5 @@ interface FitnessRepository {
     fun getDailyFitnessData(context: Context): MutableLiveData<DailyFitnessModel>
     fun getWeeklyFitnessData(context: Context): MutableLiveData<WeeklyFitnessModel>
     fun getGoogleAccount(context: Context): GoogleSignInAccount
+
 }

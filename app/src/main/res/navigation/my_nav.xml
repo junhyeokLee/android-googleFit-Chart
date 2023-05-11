@@ -10,14 +10,14 @@
         android:name="com.junhyeoklee.googlechart.ui.Home"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" />
-<!--    <fragment-->
-<!--        android:id="@+id/statistics_fragment"-->
-<!--        android:name="com.atilmohamine.fitnesstracker.ui.Statistics"-->
-<!--        android:label="fragment_statistics"-->
-<!--        tools:layout="@layout/fragment_statistics" />-->
-<!--    <fragment-->
-<!--        android:id="@+id/setting_fragment"-->
-<!--        android:name="com.atilmohamine.fitnesstracker.ui.Setting"-->
-<!--        android:label="fragment_setting"-->
-<!--        tools:layout="@layout/fragment_setting" />-->
+    <fragment
+        android:id="@+id/statistics_fragment"
+        android:name="com.junhyeoklee.googlechart.ui.Statistics"
+        android:label="fragment_statistics"
+        tools:layout="@layout/fragment_statistics" />
+    <fragment
+        android:id="@+id/setting_fragment"
+        android:name="com.junhyeoklee.googlechart.ui.Setting"
+        android:label="fragment_setting"
+        tools:layout="@layout/fragment_setting" />
 </navigation>

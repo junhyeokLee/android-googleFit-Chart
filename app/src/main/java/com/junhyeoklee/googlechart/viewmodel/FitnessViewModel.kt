@@ -17,12 +17,12 @@ class FitnessViewModel @Inject constructor(private val fitnessRepository: Fitnes
 
 //    val sharedPreferencesRepo: SharedPreferencesRepository = SharedPreferencesRepositoryImpl()
 
-    fun getDailyFitnessData(context: Context): LiveData<DailyFitnessModel> {
+     fun getDailyFitnessData(context: Context): LiveData<DailyFitnessModel> {
         var dailyFitnessLiveData = fitnessRepository.getDailyFitnessData(context)
         return dailyFitnessLiveData
     }
 
-    fun getWeeklyFitnessData(context: Context): LiㅎveData<WeeklyFitnessModel> {
+    fun getWeeklyFitnessData(context: Context): LiveData<WeeklyFitnessModel> {
         var weeklyFitnessLiveData = fitnessRepository.getWeeklyFitnessData(context)
         return weeklyFitnessLiveData
     }
