@@ -2,4 +2,5 @@ package com.atilmohamine.fitnesstracker.model
 
 data class DailyFitnessModel (val stepCount: Int,
                               val caloriesBurned: Int,
-                              val distance: Float)
+                              val distance: Float,
+                                val active: Float)

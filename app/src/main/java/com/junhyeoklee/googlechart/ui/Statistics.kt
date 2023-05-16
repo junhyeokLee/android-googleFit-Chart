@@ -18,13 +18,14 @@ import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.*
 import com.junhyeoklee.googlechart.R
+import com.junhyeoklee.googlechart.databinding.FragmentStatisticsBinding
 import com.junhyeoklee.googlechart.model.HourFitnessModel
 import com.junhyeoklee.googlechart.model.MinuteFitnessModel
 import com.junhyeoklee.googlechart.model.SecondFitnessModel
 import com.junhyeoklee.googlechart.viewmodel.FitnessViewModel
 
 
-class Statistics : Fragment() {
+class Statistics : Fragment(R.layout.fragment_statistics) {
 
     private lateinit var weekChart: BarChart
     private lateinit var hourkChart: BarChart
@@ -32,42 +33,31 @@ class Statistics : Fragment() {
     private lateinit var secondChart: BarChart
 
     private val fitnessViewModel: FitnessViewModel by viewModels()
-    private lateinit var rootView: View
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val binding = FragmentStatisticsBinding.bind(view)
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        rootView = inflater.inflate(R.layout.fragment_statistics, container, false)
+        binding.apply {
+            this@Statistics.weekChart = this.weekChart
+            this@Statistics.hourkChart = this.hourChart
+            this@Statistics.minuteChart = this.minuteChart
+            this@Statistics.secondChart = this.secondChart
+        }
 
-        weekChart = rootView.findViewById(R.id.week_chart)
-        hourkChart = rootView.findViewById(R.id.hour_chart)
-        minuteChart = rootView.findViewById(R.id.minute_chart)
-        secondChart = rootView.findViewById(R.id.second_chart)
-
-        fitnessViewModel.getWeeklyFitnessData(rootView.context).observe(viewLifecycleOwner, Observer { WeeklyFitness->
-            Log.e("WeekFitness","weekFitness")
+        fitnessViewModel.getWeeklyFitnessData(requireContext()).observe(viewLifecycleOwner, Observer { WeeklyFitness->
             loadWeekChart(WeeklyFitness)
         })
-        fitnessViewModel.getHourFitnessData(rootView.context).observe(viewLifecycleOwner, Observer { HourFitness->
-            Log.e("HourFitness","HourFitness")
+        fitnessViewModel.getHourFitnessData(requireContext()).observe(viewLifecycleOwner, Observer { HourFitness->
             loadHourChart(HourFitness)
         })
-        fitnessViewModel.getMinuteFitnessData(rootView.context).observe(viewLifecycleOwner, Observer { MinuteFitness->
-            Log.e("MinuteFitness","MinuteFitness")
+        fitnessViewModel.getMinuteFitnessData(requireContext()).observe(viewLifecycleOwner, Observer { MinuteFitness->
             loadMinuteChart(MinuteFitness)
         })
-
-        fitnessViewModel.getSecondFitnessData(rootView.context).observe(viewLifecycleOwner, Observer { SecondFitness->
-            Log.e("SecondFitness","SecondFitness")
+        fitnessViewModel.getSecondFitnessData(requireContext()).observe(viewLifecycleOwner, Observer { SecondFitness->
             loadSecondChart(SecondFitness)
         })
 
-        return rootView
     }
 
     private fun loadWeekChart(WeeklyFitness: WeeklyFitnessModel) {
@@ -77,8 +67,8 @@ class Statistics : Fragment() {
 
         val caloriesDataSet = BarDataSet(mutableListOf(), "Calories")
         val stepsDataSet = BarDataSet(mutableListOf(), "Steps")
-        stepsDataSet.color = ContextCompat.getColor(rootView.context, R.color.calories)
-        stepsDataSet.valueTextColor = ContextCompat.getColor(rootView.context, R.color.white)
+        stepsDataSet.color = ContextCompat.getColor(requireContext(), R.color.calories)
+        stepsDataSet.valueTextColor = ContextCompat.getColor(requireContext(), R.color.white)
         val distanceDataSet = LineDataSet(mutableListOf(), "Distance")
 
         WeeklyFitness.dailyFitnessList.forEachIndexed { index, fitnessData ->
@@ -102,7 +92,7 @@ class Statistics : Fragment() {
         val xAxis = weekChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         //xAxis.labelCount = 7
-        xAxis.textColor = ContextCompat.getColor(rootView.context, R.color.white)
+        xAxis.textColor = ContextCompat.getColor(requireContext(), R.color.white)
         xAxis.valueFormatter = DayAxisValueFormatter(weekChart)
 
         // Set Y-axis properties
@@ -131,7 +121,7 @@ class Statistics : Fragment() {
         hourkChart.setDrawGridBackground(false)
 
         val stepsDataSet = BarDataSet(mutableListOf(), "Steps")
-        stepsDataSet.valueTextColor = ContextCompat.getColor(rootView.context, R.color.white)
+        stepsDataSet.valueTextColor = ContextCompat.getColor(requireContext(), R.color.white)
 
 
         HourFitness.forEachIndexed { index, hourFitnessModel ->
@@ -150,7 +140,7 @@ class Statistics : Fragment() {
         val xAxis = hourkChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         //xAxis.labelCount = 7
-        xAxis.textColor = ContextCompat.getColor(rootView.context, R.color.white)
+        xAxis.textColor = ContextCompat.getColor(requireContext(), R.color.white)
         xAxis.valueFormatter = HourAxisValueFormatter(hourkChart)
 
         // Set Y-axis properties
@@ -180,12 +170,10 @@ class Statistics : Fragment() {
         minuteChart.setDrawGridBackground(false)
 
         val stepsDataSet = BarDataSet(mutableListOf(), "Steps")
-        stepsDataSet.valueTextColor = ContextCompat.getColor(rootView.context, R.color.white)
+        stepsDataSet.valueTextColor = ContextCompat.getColor(requireContext(), R.color.white)
 
 
         MinuteFitness.forEachIndexed { index, minuteFitnessModel ->
-            Log.e("분 데이터 = ","몇분 = "+minuteFitnessModel.time.toString()+"   : 스텝 = "+minuteFitnessModel.stepCount.toFloat())
-
             val stepsEntry = BarEntry(index.toFloat(), minuteFitnessModel.stepCount.toFloat())
             stepsDataSet.addEntry(stepsEntry)
 
@@ -201,7 +189,7 @@ class Statistics : Fragment() {
         val xAxis = minuteChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         //xAxis.labelCount = 7
-        xAxis.textColor = ContextCompat.getColor(rootView.context, R.color.white)
+        xAxis.textColor = ContextCompat.getColor(requireContext(), R.color.white)
         xAxis.valueFormatter = MinuteAxisValueFormatter(minuteChart)
 
         // Set Y-axis properties
@@ -228,14 +216,12 @@ class Statistics : Fragment() {
         secondChart.setTouchEnabled(false)
         secondChart.setDrawGridBackground(false)
 
-        Log.e("초단위 데이터 = ",""+SecondFitness.toString())
-
         val stepsDataSet = BarDataSet(mutableListOf(), "Steps")
-        stepsDataSet.valueTextColor = ContextCompat.getColor(rootView.context, R.color.white)
+        stepsDataSet.valueTextColor = ContextCompat.getColor(requireContext(), R.color.white)
 
 
         SecondFitness.forEachIndexed { index, secondFitnessModel ->
-            Log.e("초 데이터 = ","몇초 = "+secondFitnessModel.time.toString()+"   : 스텝 = "+secondFitnessModel.stepCount.toFloat())
+//            Log.e("초 데이터 = ","몇초 = "+secondFitnessModel.time.toString()+"   : 스텝 = "+secondFitnessModel.stepCount.toFloat())
 
             val stepsEntry = BarEntry(index.toFloat(), secondFitnessModel.stepCount.toFloat())
             stepsDataSet.addEntry(stepsEntry)
@@ -252,7 +238,7 @@ class Statistics : Fragment() {
         val xAxis = secondChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         //xAxis.labelCount = 7
-        xAxis.textColor = ContextCompat.getColor(rootView.context, R.color.white)
+        xAxis.textColor = ContextCompat.getColor(requireContext(), R.color.white)
         xAxis.valueFormatter = SecondAxisValueFormatter(secondChart)
 
         // Set Y-axis properties

@@ -10,34 +10,28 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.viewModels
 import com.junhyeoklee.googlechart.R
+import com.junhyeoklee.googlechart.databinding.FragmentSettingBinding
 import com.junhyeoklee.googlechart.viewmodel.FitnessViewModel
 
-class Setting : Fragment() {
+class Setting : Fragment(R.layout.fragment_setting) {
 
     private lateinit var stepsTextView: TextView
     private lateinit var changeObjButton: Button
 
     private val fitnessViewModel: FitnessViewModel by viewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val binding = FragmentSettingBinding.bind(view)
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val rootView = inflater.inflate(R.layout.fragment_setting, container, false)
-
-        stepsTextView = rootView.findViewById(R.id.steps)
-        changeObjButton = rootView.findViewById(R.id.changeObj)
-
-        showObjectiveSteps(rootView.context)
-        changeObjButton.setOnClickListener{
-            showObjectiveDialog(rootView.context)
+        binding.apply {
+            stepsTextView = this.steps
+            changeObjButton = this.changeObj
         }
-
-        return rootView
+        showObjectiveSteps(requireContext())
+        changeObjButton.setOnClickListener{
+            showObjectiveDialog(requireContext())
+        }
     }
 
     private fun showObjectiveSteps(context: Context) {

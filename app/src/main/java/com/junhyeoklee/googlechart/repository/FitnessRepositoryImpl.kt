@@ -1,7 +1,9 @@
 package com.atilmohamine.fitnesstracker.repository
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.atilmohamine.fitnesstracker.model.DailyFitnessModel
@@ -14,10 +16,15 @@ import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.Field
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
+import com.google.gson.Gson
 import com.junhyeoklee.googlechart.model.HourFitnessModel
 import com.junhyeoklee.googlechart.model.MinuteFitnessModel
 import com.junhyeoklee.googlechart.model.SecondFitnessModel
+import com.junhyeoklee.googlechart.model.StepModel
 import java.lang.Exception
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -106,11 +113,63 @@ class FitnessRepositoryImpl(): FitnessRepository {
         return secondFitnessLiveData
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun getMinuteFitnessData(context: Context): MutableLiveData<List<MinuteFitnessModel>> {
         val minuteFitnessLiveData= MutableLiveData<List<MinuteFitnessModel>>()
 
         val endTime = System.currentTimeMillis()
         val startTime = getStartOfToday()
+
+        val assetManager = context.assets
+        val jsonInputStream = assetManager.open("step2.json")
+        val json = jsonInputStream.bufferedReader().use { it.readText() }
+
+        val gson = Gson()
+        val stepCountData = gson.fromJson(json, StepModel::class.java)
+
+        val kstZoneId = ZoneId.of("Asia/Seoul")
+
+        for (step in stepCountData.dataPoints) {
+            val stepCount = step.fitValue[0].value.intVal
+            val startTime = step.startTimeNanos
+            val endTime = step.endTimeNanos
+            val dataName = step.dataTypeName
+
+            val startTimeMinutes = TimeUnit.NANOSECONDS.toMinutes(startTime)
+            val endTimeMinutes = TimeUnit.NANOSECONDS.toMinutes(endTime)
+            val durationMinutes = endTimeMinutes - startTimeMinutes
+
+            val startDateTimeKST = Instant.ofEpochMilli(startTime / 1000000).atZone(kstZoneId)
+            val endDateTimeKST = Instant.ofEpochMilli(endTime / 1000000).atZone(kstZoneId)
+
+            val startYear = startDateTimeKST.year
+            val startMonth = startDateTimeKST.monthValue
+            val startDay = startDateTimeKST.dayOfMonth
+            val startHour = startDateTimeKST.hour
+            val startMinute = startDateTimeKST.minute
+
+            val endYear = endDateTimeKST.year
+            val endMonth = endDateTimeKST.monthValue
+            val endDay = endDateTimeKST.dayOfMonth
+            val endHour = endDateTimeKST.hour
+            val endMinute = endDateTimeKST.minute
+
+            val stepsPerMinute = if (durationMinutes != 0L) {
+                stepCount.toDouble() / durationMinutes
+            } else {
+                0.0
+            }
+
+            Log.e("StepCountData", "Data Name: $dataName")
+            Log.e("StepCountData", "Step Count: $stepCount")
+            Log.e("StepCountData", "startTimeNanos : $startYear-$startMonth-$startDay $startHour:$startMinute")
+            Log.e("StepCountData", "endTimeNanos : $endYear-$endMonth-$endDay $endHour:$endMinute")
+            Log.e("StepCountData", "분 차이: $durationMinutes")
+            Log.e("StepCountData", "1분으로 나눈값 : $stepsPerMinute")
+        }
+
+
+
 
         val readRequest = DataReadRequest.Builder()
             .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
@@ -201,6 +260,7 @@ class FitnessRepositoryImpl(): FitnessRepository {
             .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
             .aggregate(DataType.TYPE_CALORIES_EXPENDED, DataType.AGGREGATE_CALORIES_EXPENDED)
             .aggregate(DataType.TYPE_DISTANCE_DELTA, DataType.AGGREGATE_DISTANCE_DELTA)
+            .aggregate(DataType.TYPE_MOVE_MINUTES, DataType.AGGREGATE_MOVE_MINUTES)
             .bucketByTime(1, TimeUnit.DAYS)
             .setTimeRange(startTime, System.currentTimeMillis(), TimeUnit.MILLISECONDS)
             .build()
@@ -208,13 +268,13 @@ class FitnessRepositoryImpl(): FitnessRepository {
         Fitness.getHistoryClient(context, getGoogleAccount(context))
             .readData(readRequest)
             .addOnSuccessListener { data ->
-                Log.e("ㅇㅇ", "성공 subscribed!")
 
                 val buckets = data.buckets
                 val bucket = if (buckets.isNotEmpty()) buckets[0] else null
                 var stepCount = 0
                 var calories = 0
                 var distance = 0.0f
+                var active = 0.0f
 
                 bucket?.dataSets?.forEach { dataSet ->
                     dataSet.dataPoints.forEach { dataPoint ->
@@ -228,10 +288,13 @@ class FitnessRepositoryImpl(): FitnessRepository {
                             DataType.TYPE_DISTANCE_DELTA -> {
                                 distance = dataPoint.getValue(Field.FIELD_DISTANCE).asFloat() / 1000
                             }
+                            DataType.TYPE_MOVE_MINUTES -> {
+                                active = dataPoint.getValue(Field.FIELD_DURATION).asInt().toFloat()
+                            }
                         }
                     }
                 }
-                val dailyFitness = DailyFitnessModel(stepCount, calories, distance)
+                val dailyFitness = DailyFitnessModel(stepCount, calories, distance,active)
                 dailyFitnessLiveData.postValue(dailyFitness)
             }
             .addOnFailureListener { exception ->
@@ -273,6 +336,7 @@ class FitnessRepositoryImpl(): FitnessRepository {
                     var stepCount = 0
                     var calories = 0
                     var distance = 0.0f
+                    var active = 0.0f
 
                     bucket.dataSets.forEach { dataSet ->
                         dataSet.dataPoints.forEach { dataPoint ->
@@ -286,11 +350,14 @@ class FitnessRepositoryImpl(): FitnessRepository {
                                 DataType.TYPE_DISTANCE_DELTA -> {
                                     distance = dataPoint.getValue(Field.FIELD_DISTANCE).asFloat() / 1000
                                 }
+                                DataType.TYPE_MOVE_MINUTES -> {
+                                    active = dataPoint.getValue(Field.FIELD_DURATION).asInt().toFloat()
+                                }
                             }
                         }
                     }
 
-                    val dailyFitness = DailyFitnessModel(stepCount, calories, distance)
+                    val dailyFitness = DailyFitnessModel(stepCount, calories, distance,active)
                     dailyFitnessList.add(dailyFitness)
                 }
 
