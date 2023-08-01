@@ -16,6 +16,11 @@
         android:label="fragment_statistics"
         tools:layout="@layout/fragment_statistics" />
     <fragment
+        android:id="@+id/takeout_fragment"
+        android:name="com.junhyeoklee.googlechart.ui.TakeOut"
+        android:label="fragment_takeout"
+        tools:layout="@layout/fragment_takeout" />
+    <fragment
         android:id="@+id/setting_fragment"
         android:name="com.junhyeoklee.googlechart.ui.Setting"
         android:label="fragment_setting"

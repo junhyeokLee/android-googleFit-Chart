@@ -9,6 +9,7 @@ import kotlinx.coroutines.SupervisorJob
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
+// 의존성을 위한 Dagger Hilt 라이브러리 사용
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
